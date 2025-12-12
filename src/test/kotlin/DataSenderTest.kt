@@ -46,7 +46,7 @@ class DataSenderTest {
   fun `sendTestRun should successfully send data`() {
     // Setup mock server
     stubFor(
-      post(urlEqualTo("/api/testrun/"))
+      post(urlEqualTo("/api/v1/test-runs"))
         .withHeader("Content-Type", equalTo("application/json"))
         .willReturn(
           aResponse()
@@ -61,7 +61,7 @@ class DataSenderTest {
     // Verify
     assertTrue(result.isSuccess)
     verify(
-      postRequestedFor(urlEqualTo("/api/testrun/"))
+      postRequestedFor(urlEqualTo("/api/v1/test-runs"))
         .withHeader("Content-Type", equalTo("application/json"))
     )
   }
@@ -70,17 +70,17 @@ class DataSenderTest {
    fun `sendTestRun should follow redirects`() {
      // Setup mock server for initial redirect
      stubFor(
-       post(urlEqualTo("/api/testrun/"))
+       post(urlEqualTo("/api/v1/test-runs"))
          .willReturn(
            aResponse()
              .withStatus(307)
-             .withHeader("Location", "/api/testrun/redirect")
+             .withHeader("Location", "/api/v1/test-runs/redirect")
          )
      )
 
      // Setup mock server for the redirected endpoint
      stubFor(
-       post(urlEqualTo("/api/testrun/redirect"))
+       post(urlEqualTo("/api/v1/test-runs/redirect"))
          .withHeader("Content-Type", equalTo("application/json"))
          .willReturn(
            aResponse()
@@ -95,11 +95,11 @@ class DataSenderTest {
      // Verify
      assertTrue(result.isSuccess)
      verify(
-       postRequestedFor(urlEqualTo("/api/testrun/"))
+       postRequestedFor(urlEqualTo("/api/v1/test-runs"))
          .withHeader("Content-Type", equalTo("application/json"))
      )
      verify(
-       postRequestedFor(urlEqualTo("/api/testrun/redirect"))
+       postRequestedFor(urlEqualTo("/api/v1/test-runs/redirect"))
          .withHeader("Content-Type", equalTo("application/json"))
      )
    }
@@ -108,7 +108,7 @@ class DataSenderTest {
   fun `sendTestRun should handle server errors`() {
     // Setup mock server to return error
     stubFor(
-      post(urlEqualTo("/api/testrun/"))
+      post(urlEqualTo("/api/v1/test-runs"))
         .willReturn(
           aResponse()
             .withStatus(500)
