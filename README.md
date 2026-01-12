@@ -111,6 +111,28 @@ fernPublisher {
 | verbose     | Enable verbose logging                                                                                                                                                    | No       | false      |
 | failOnError | When true, will fail when error is thrown. Errors will always log.                                                                                                        | No       | false      |
 
+
+### Authentication (Optional)
+
+If your Fern instance requires OAuth authentication, you can configure it using environment variables:
+
+```bash
+export OAUTH_TOKEN_URL="https://auth.example.com/token"
+export OAUTH_CLIENT_ID="your-client-id"
+export OAUTH_CLIENT_PASSWORD="your-client-secret"
+export OAUTH_SCOPES="fern.write fernproject.myproject"
+```
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| OAUTH_TOKEN_URL | OAuth token endpoint URL | Yes (if auth enabled) |
+| OAUTH_CLIENT_ID | OAuth client identifier | Yes (if auth enabled) |
+| OAUTH_CLIENT_PASSWORD | OAuth client secret | Yes (if auth enabled) |
+| OAUTH_SCOPES | Space-separated OAuth scopes (e.g., `fern.write fern.read`) | Yes (if auth enabled) |
+
+The plugin will automatically use these environment variables when making API calls to your Fern instance.
+
+
 ## Usage
 
 Run the task to publish test results:
@@ -237,5 +259,70 @@ For building the CLI, you will need to have GraalVM installed and set the enviro
 Once that is set up, run the following command in the project root:
 
 ```bash
-./gradlew nativeImage -Pversion="1.0.0-SNAPSHOT" 
+./gradlew nativeImage -Pversion="1.0.0-SNAPSHOT"
 ```
+
+## Testing
+
+This project uses JUnit 5 (Jupiter) for testing along with AssertJ for assertions, WireMock for HTTP mocking, and Gradle TestKit for plugin testing.
+
+### Running Tests
+
+Run all tests:
+```bash
+./gradlew test
+```
+
+Run tests with verbose output:
+```bash
+./gradlew test --info
+```
+
+Run a specific test class:
+```bash
+./gradlew test --tests TestParserTest
+./gradlew test --tests DataSenderTest
+./gradlew test --tests FernPublisherPluginTest
+```
+
+Run a specific test method:
+```bash
+./gradlew test --tests "TestParserTest.parseReports should handle empty file pattern"
+```
+
+Continuous testing (watches for changes):
+```bash
+./gradlew test --continuous
+```
+
+Clean and test:
+```bash
+./gradlew clean test
+```
+
+### Test Structure
+
+The project includes three main test suites located in `src/test/kotlin/`:
+
+- **TestParserTest.kt** - Tests JUnit XML parsing logic, including:
+  - Parsing various JUnit XML formats
+  - Handling empty file patterns
+  - Timezone handling
+  - Test suite and test case extraction
+
+- **DataSenderTest.kt** - Tests HTTP client and API communication, including:
+  - Sending test data to Fern Reporter API
+  - HTTP retry logic
+  - Error handling and redirects
+
+- **FernPublisherPluginTest.kt** - Tests Gradle plugin functionality, including:
+  - Plugin configuration
+  - Task registration
+  - Integration with Gradle build lifecycle
+
+### Test Dependencies
+
+- **JUnit Jupiter** (JUnit 5) - Testing framework
+- **AssertJ** - Fluent assertion library
+- **WireMock** - HTTP service mocking
+- **Gradle TestKit** - Gradle plugin testing framework
