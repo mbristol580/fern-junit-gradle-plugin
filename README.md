@@ -232,25 +232,46 @@ cd fern-junit-publisher
 
 ## Development
 
-You can build and publish this plugin for use locally with the command
+### Publishing to Local Maven Repository
+
+To test the plugin locally during development, you can publish it to your local Maven repository (`.m2`).
+
+**Important:** You must specify a version number when publishing. Use the latest released version or the next version you plan to release.
 
 ```bash
-./gradlew publishToMavenLocal
+./gradlew publishToMavenLocal -Pversion=1.1.0
 ```
 
-You should see the plugin in your local `.m2` repository.
+The plugin will be published to your local `.m2` repository at:
+```
+~/.m2/repository/io/github/guidewire-oss/fern-junit-gradle-plugin/1.1.0/
+```
 
-From there you can set up a test project to use the plugin. Make sure to edit your `settings.gradle` file to use plugins
-found in your local m2 repository.
+### Using the Local Plugin in a Test Project
 
-```gradle
+To use your locally published plugin in a test project:
+
+1. Configure your test project's `settings.gradle` (or `settings.gradle.kts`) to use `mavenLocal()`:
+
+```groovy
 pluginManagement {
     repositories {
-        mavenLocal()
+        mavenLocal()  // Check local repository first
         mavenCentral()
     }
 }
 ```
+
+2. Apply the plugin in your test project's `build.gradle`:
+
+```groovy
+plugins {
+    id 'io.github.guidewire-oss.fern-publisher' version '1.1.0'
+}
+```
+
+3. Configure and test the plugin as described in the [Configuration](#configuration) section.
+
 ### Building the CLI
 Native CLI binaries are built using GraalVM's native-image tool. This allows the CLI to run without requiring a Java runtime, making it lightweight and portable.
 
@@ -259,7 +280,7 @@ For building the CLI, you will need to have GraalVM installed and set the enviro
 Once that is set up, run the following command in the project root:
 
 ```bash
-./gradlew nativeImage -Pversion="1.0.0-SNAPSHOT"
+./gradlew nativeImage -Pversion="1.1.0"
 ```
 
 ## Testing
