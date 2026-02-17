@@ -68,7 +68,7 @@ fun sendTestRun(
         }
       }
 
-      response = postTestRun(endpoint, fernUrl, payload, oauthClient, verbose)
+      response = postTestRun(endpoint, fernUrl, payload, oauthClient, verbose, maxRedirects = 5)
       if (response.statusCode() < 300) {
         break
       } else {
@@ -89,7 +89,9 @@ private fun postTestRun(
   fernUrl: String,
   payload: String,
   oauthClient: OAuthClient?,
-  verbose: Boolean
+  verbose: Boolean,
+  maxRedirects: Int = 5,
+  redirectCount: Int = 0
 ): HttpResponse<String> {
   val client = HttpClient.newBuilder()
     .connectTimeout(Duration.ofSeconds(30))
@@ -117,12 +119,16 @@ private fun postTestRun(
 
   var response = client.send(request, HttpResponse.BodyHandlers.ofString())
   if (response.statusCode() == 307) {
+    if (redirectCount >= maxRedirects) {
+      throw RuntimeException("Too many redirects: exceeded maximum of $maxRedirects")
+    }
+    
     val locationHeader = response.headers().firstValue("location").orElseThrow {
       RuntimeException("Location header not found in 307 response")
     }
 
     // Validate and resolve redirect location to prevent open redirects
-    val baseUri = URI(fernUrl)
+    val baseUri = URI(endpoint)
     val redirectUri = URI(locationHeader)
 
     val baseHost = baseUri.host?.lowercase()
@@ -139,7 +145,7 @@ private fun postTestRun(
       baseUri.resolve(redirectUri).normalize()
     }
 
-    response = postTestRun(resolvedUri.toString(), fernUrl, payload, oauthClient, verbose)
+    response = postTestRun(resolvedUri.toString(), fernUrl, payload, oauthClient, verbose, maxRedirects, redirectCount + 1)
   }
   return response
 }

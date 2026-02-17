@@ -50,7 +50,7 @@ class OAuthClientTest {
 
   @Test
   fun `fromEnvironment should return null when AUTH_URL not set`() {
-    EnvironmentVariables().clear("AUTH_URL").execute {
+    EnvironmentVariables().execute {
       val client = OAuthClient.fromEnvironment()
       assertNull(client)
     }
@@ -347,7 +347,7 @@ class OAuthClientTest {
               {
                 "access_token": "short-lived-token-${++callCount}",
                 "token_type": "Bearer",
-                "expires_in": 1
+                "expires_in": 0
               }
               """.trimIndent()
             )
@@ -365,14 +365,14 @@ class OAuthClientTest {
     val token1 = client.getToken()
     assertNotNull(token1)
 
-    // Wait for token to expire (1 second + 30 second buffer means it expires immediately in practice)
-    Thread.sleep(100)
+    // Wait for token to expire (0 seconds + 30 second buffer = 30 seconds)
+    Thread.sleep(31000)
 
     // Second call should fetch a new token because the first one is expired
     val token2 = client.getToken()
     assertNotNull(token2)
 
-     // Token should be fetched twice because expiry is immediate
+     // Token should be fetched twice because expiry time has passed
     verify(2, postRequestedFor(urlEqualTo("/oauth/token")))
   }
 }
