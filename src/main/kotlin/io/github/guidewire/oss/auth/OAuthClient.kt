@@ -145,7 +145,7 @@ class OAuthClient private constructor(private val config: OAuthConfig) {
         // Store the token and calculate expiry
         token = tokenResp
         // Subtract 30 seconds from expiry to ensure we refresh before it actually expires
-        val expiryDuration = Duration.ofSeconds((tokenResp.expiresIn - 30).toLong())
+        val expiryDuration = Duration.ofSeconds((tokenResp.expiresIn - 30).coerceAtLeast(1).toLong())
         tokenExpiry = Instant.now().plus(expiryDuration)
     }
 
@@ -155,15 +155,6 @@ class OAuthClient private constructor(private val config: OAuthConfig) {
     fun addAuthHeader(requestBuilder: HttpRequest.Builder) {
         val token = getToken()
         requestBuilder.header("Authorization", "Bearer $token")
-    }
-
-    /**
-     * Creates an HTTP client with OAuth authentication
-     */
-    fun createAuthenticatedClient(): HttpClient {
-        return HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(30))
-            .build()
     }
 
     private fun urlEncode(value: String): String {

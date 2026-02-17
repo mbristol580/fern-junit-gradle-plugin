@@ -120,7 +120,26 @@ private fun postTestRun(
     val locationHeader = response.headers().firstValue("location").orElseThrow {
       RuntimeException("Location header not found in 307 response")
     }
-    response = postTestRun(fernUrl + locationHeader, fernUrl, payload, oauthClient, verbose)
+
+    // Validate and resolve redirect location to prevent open redirects
+    val baseUri = URI(fernUrl)
+    val redirectUri = URI(locationHeader)
+
+    val baseHost = baseUri.host?.lowercase()
+    val redirectHost = redirectUri.host?.lowercase()
+
+    val resolvedUri = if (redirectUri.isAbsolute) {
+      // Only follow absolute redirects that stay on the same scheme and host as the base URI
+      if (redirectUri.scheme != baseUri.scheme || redirectHost != baseHost) {
+        throw RuntimeException("Refusing to follow redirect to untrusted host: $redirectUri")
+      }
+      redirectUri.normalize()
+    } else {
+      // Relative redirect: resolve against the trusted base URI
+      baseUri.resolve(redirectUri).normalize()
+    }
+
+    response = postTestRun(resolvedUri.toString(), fernUrl, payload, oauthClient, verbose)
   }
   return response
 }

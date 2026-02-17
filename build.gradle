@@ -12,7 +12,8 @@ plugins {
 }
 
 group = 'io.github.guidewire-oss'
-version = project.hasProperty('version') ? project.version : '1.1.0'
+// Only use user-supplied version if provided; otherwise default
+version = (findProperty('version') ?: '1.1.0')
 
 def os = DefaultNativePlatform.currentOperatingSystem
 def arch = DefaultNativePlatform.currentArchitecture

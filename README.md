@@ -131,6 +131,7 @@ export OAUTH_SCOPES="fern.write fernproject.myproject"
 | OAUTH_SCOPES | Space-separated OAuth scopes (e.g., `fern.write fern.read`) | Yes (if auth enabled) |
 
 The plugin will automatically use these environment variables when making API calls to your Fern instance.
+Note: You can configure these in your build.gradle but is not recommended due to secret nature.
 
 
 ## Usage
