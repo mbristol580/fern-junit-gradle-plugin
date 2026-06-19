@@ -117,21 +117,37 @@ fernPublisher {
 If your Fern instance requires OAuth authentication, you can configure it using environment variables:
 
 ```bash
-export OAUTH_TOKEN_URL="https://auth.example.com/token"
-export OAUTH_CLIENT_ID="your-client-id"
-export OAUTH_CLIENT_PASSWORD="your-client-secret"
-export OAUTH_SCOPES="fern.write fernproject.myproject"
+export AUTH_URL="https://auth.example.com/token"
+export FERN_AUTH_CLIENT_ID="your-client-id"
+export FERN_AUTH_CLIENT_SECRET="your-client-secret"
+export FERN_CLIENT_SCOPE="fern.write fernproject.myproject"
 ```
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| OAUTH_TOKEN_URL | OAuth token endpoint URL | Yes (if auth enabled) |
-| OAUTH_CLIENT_ID | OAuth client identifier | Yes (if auth enabled) |
-| OAUTH_CLIENT_PASSWORD | OAuth client secret | Yes (if auth enabled) |
-| OAUTH_SCOPES | Space-separated OAuth scopes (e.g., `fern.write fern.read`) | Yes (if auth enabled) |
+| AUTH_URL | OAuth token endpoint URL. Setting this enables OAuth. | Yes (to enable auth) |
+| FERN_AUTH_CLIENT_ID | OAuth client identifier | Yes (if `AUTH_URL` is set) |
+| FERN_AUTH_CLIENT_SECRET | OAuth client secret | Yes (if `AUTH_URL` is set) |
+| FERN_CLIENT_SCOPE | Space-separated OAuth scopes (e.g., `fern.write fern.read`) | No |
 
-The plugin will automatically use these environment variables when making API calls to your Fern instance.
-Note: You can configure these in your build.gradle but is not recommended due to secret nature.
+OAuth is enabled when `AUTH_URL` is set; if it is set, `FERN_AUTH_CLIENT_ID` and
+`FERN_AUTH_CLIENT_SECRET` are required and the plugin will fail fast if either is missing.
+The plugin uses the OAuth 2.0 client credentials flow and adds the bearer token to API calls.
+
+Alternatively, you can configure OAuth in your `build.gradle` via the `fernPublisher` extension.
+Prefer sourcing secrets from the environment rather than hardcoding them:
+
+```gradle
+fernPublisher {
+    authUrl          = System.getenv("AUTH_URL")
+    authClientId     = System.getenv("FERN_AUTH_CLIENT_ID")
+    authClientSecret = System.getenv("FERN_AUTH_CLIENT_SECRET")
+    authScopes       = "fern.write fernproject.myproject"
+}
+```
+
+If `authUrl` is set in the extension it takes precedence; the environment variables above are
+used as a fallback when `authUrl` is left blank.
 
 
 ## Usage
